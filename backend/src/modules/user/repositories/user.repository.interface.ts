@@ -1,5 +1,5 @@
 import { UserEntity } from '../entities/user.entity';
-import { UserQueryDto } from '../dto/user-query.dto';
+import { UserQueryDto } from 'src/modules/user/dto/user-query.dto';
 
 export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
 

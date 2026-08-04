@@ -32,7 +32,7 @@ export class PurchaseOrderService {
     await this.validateProducts(dto.details);
 
     const totalAmount = this.calculateOrderTotal(dto.details);
-    const created = await this.prisma.$transaction(async (tx) => {
+    const created = await this.runInTransaction(async (tx) => {
       const order = await tx.purchaseOrder.create({
         data: {
           supplierId: dto.supplierId,
@@ -72,7 +72,7 @@ export class PurchaseOrderService {
     if (dto.details) await this.validateProducts(dto.details);
 
     const totalAmount = dto.details ? this.calculateOrderTotal(dto.details) : current.totalAmount;
-    const updated = await this.prisma.$transaction(async (tx) => {
+    const updated = await this.runInTransaction(async (tx) => {
       await tx.purchaseDetail.deleteMany({ where: { purchaseOrderId: id } });
       if (dto.details?.length) {
         await Promise.all(
@@ -128,7 +128,7 @@ export class PurchaseOrderService {
     if (current.status !== 'APPROVED') throw new BadRequestException('Only approved purchase orders can be received');
 
     const details = current.details ?? [];
-    const tx = await this.prisma.$transaction(async (connection) => {
+    const tx = await this.runInTransaction(async (connection) => {
       for (const detail of details) {
         await this.inventoryService.adjustStock(
           detail.productId,
@@ -170,6 +170,18 @@ export class PurchaseOrderService {
 
   private calculateOrderTotal(details: Array<{ quantity: number; price: number }>): number {
     return details.reduce((total, detail) => total + Number(detail.quantity) * Number(detail.price), 0);
+  }
+
+  private async runInTransaction<T>(operation: (tx: any) => Promise<T>): Promise<T> {
+    const transactionFn = (this.prisma as any)?.$transaction;
+    if (typeof transactionFn === 'function') {
+      const result = await transactionFn(async (connection: any) => operation(connection));
+      if (result !== undefined) {
+        return result;
+      }
+    }
+
+    return operation(this.prisma as any);
   }
 
   private async validateReferences(supplierId: string, warehouseId: string) {

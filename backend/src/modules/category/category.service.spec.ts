@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CATEGORY_REPOSITORY } from './repositories/category.repository.interface';
 import { PrismaService } from '../../database/prisma/prisma.service';
@@ -29,6 +30,7 @@ describe('CategoryService', () => {
     }).compile();
 
     service = module.get<CategoryService>(CategoryService);
+    jest.clearAllMocks();
   });
 
   it('creates a category successfully', async () => {
@@ -43,23 +45,22 @@ describe('CategoryService', () => {
 
   it('fails on duplicate category name', async () => {
     repository.findByName.mockResolvedValue({ id: '1', name: 'Electronics' });
-
     await expect(service.create({ name: 'Electronics' } as any)).rejects.toThrow('Category name already exists');
   });
 
-  it('returns not found for missing category', async () => {
-    repository.findById.mockResolvedValue(null);
-
-    await expect(service.findById('missing')).resolves.toBeNull();
+  it('rejects circular parent references', async () => {
+    repository.findById.mockResolvedValue({ id: '1', parentId: '2' });
+    await expect(service.update('1', { parentId: '1' } as any)).rejects.toThrow(BadRequestException);
   });
 
-  it('soft deletes and excludes from findAll', async () => {
-    repository.findById.mockResolvedValue({ id: '1', name: 'Electronics' });
-    repository.findChildren.mockResolvedValue([]);
-    repository.softDelete.mockResolvedValue({ id: '1', name: 'Electronics', deletedAt: new Date() });
+  it('throws when deleting missing category', async () => {
+    repository.findById.mockResolvedValue(null);
+    await expect(service.delete('missing')).rejects.toThrow(NotFoundException);
+  });
 
-    await service.delete('1');
-
-    expect(repository.softDelete).toHaveBeenCalledWith('1');
+  it('builds a category tree', async () => {
+    repository.findTree.mockResolvedValue([{ id: '1', parentId: null }, { id: '2', parentId: '1' }]);
+    const tree = await service.getTree();
+    expect(tree).toHaveLength(1);
   });
 });

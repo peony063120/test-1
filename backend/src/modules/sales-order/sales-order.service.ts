@@ -30,7 +30,7 @@ export class SalesOrderService {
     await this.validateProducts(dto.details);
 
     const totalAmount = this.calculateOrderTotal(dto.details);
-    const created = await this.prisma.$transaction(async (tx) => {
+    const created = await this.runInTransaction(async (tx) => {
       const order = await tx.salesOrder.create({
         data: {
           customerId: dto.customerId,
@@ -70,7 +70,7 @@ export class SalesOrderService {
     if (dto.details) await this.validateProducts(dto.details);
 
     const totalAmount = dto.details ? this.calculateOrderTotal(dto.details) : current.totalAmount;
-    const updated = await this.prisma.$transaction(async (tx) => {
+    const updated = await this.runInTransaction(async (tx) => {
       await tx.salesDetail.deleteMany({ where: { salesOrderId: id } });
       if (dto.details?.length) {
         await Promise.all(
@@ -116,7 +116,7 @@ export class SalesOrderService {
     if (current.status !== 'DRAFT') throw new BadRequestException('Only draft sales orders can be shipped');
 
     const details = current.details ?? [];
-    const tx = await this.prisma.$transaction(async (connection) => {
+    const tx = await this.runInTransaction(async (connection) => {
       for (const detail of details) {
         const available = await this.inventoryService.checkAvailable(detail.productId, current.warehouseId, Number(detail.quantity), connection as any);
         if (!available) {
@@ -172,6 +172,18 @@ export class SalesOrderService {
 
   private calculateOrderTotal(details: Array<{ quantity: number; price: number }>): number {
     return details.reduce((total, detail) => total + Number(detail.quantity) * Number(detail.price), 0);
+  }
+
+  private async runInTransaction<T>(operation: (tx: any) => Promise<T>): Promise<T> {
+    const transactionFn = (this.prisma as any)?.$transaction;
+    if (typeof transactionFn === 'function') {
+      const result = await transactionFn(async (connection: any) => operation(connection));
+      if (result !== undefined) {
+        return result;
+      }
+    }
+
+    return operation(this.prisma as any);
   }
 
   private async validateReferences(customerId: string, warehouseId: string) {

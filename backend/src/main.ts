@@ -18,7 +18,7 @@ async function bootstrap() {
   app.useGlobalPipes(createValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useLogger(logger);
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix(process.env.API_PREFIX || 'api/v1');
 
   const config = new DocumentBuilder()
     .setTitle('Product Management System API')
@@ -27,7 +27,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup(process.env.SWAGGER_PATH || 'docs', app, document);
 
   app.enableCors({
     origin: configService.get<string>('CORS_ORIGIN')?.split(',') || ['http://localhost:3001'],
@@ -37,6 +37,15 @@ async function bootstrap() {
   const port = configService.get<number>('PORT') || 3000;
   await app.listen(port);
   logger.log(`Application started on port ${port}`, 'Bootstrap');
+
+  const shutdown = async (signal: string) => {
+    logger.log(`Received ${signal}, shutting down gracefully`, 'Bootstrap');
+    await app.close();
+    process.exit(0);
+  };
+
+  process.on('SIGTERM', () => void shutdown('SIGTERM'));
+  process.on('SIGINT', () => void shutdown('SIGINT'));
 }
 
 bootstrap();

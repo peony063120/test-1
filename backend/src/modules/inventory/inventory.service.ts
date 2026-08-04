@@ -166,6 +166,10 @@ export class InventoryService {
     note?: string,
     tx?: any,
   ): Promise<any> {
+    if (quantity === 0) {
+      throw new BadRequestException('Quantity must be non-zero');
+    }
+
     const inventory = await this.inventoryRepository.findByProductAndWarehouse(productId, warehouseId);
     if (!inventory) {
       const created = await this.initializeInventory(productId, warehouseId, 0);

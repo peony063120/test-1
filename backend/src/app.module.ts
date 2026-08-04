@@ -31,6 +31,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { QueueModule } from './infrastructure/queue/queue.module';
 import { WorkerModule } from './workers/worker.module';
 import { StorageModule } from './infrastructure/storage/storage.module';
+import { MetricsModule } from './modules/metrics/metrics.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { StorageModule } from './infrastructure/storage/storage.module';
     QueueModule,
     WorkerModule,
     StorageModule,
+    MetricsModule,
     ProductsModule,
     PurchaseOrdersModule,
     SalesOrdersModule,

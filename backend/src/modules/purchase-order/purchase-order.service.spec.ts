@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PurchaseOrderService } from './purchase-order.service';
 import { PURCHASE_ORDER_REPOSITORY } from './repositories/purchase-order.repository.interface';
 import { PrismaService } from '../../database/prisma/prisma.service';
@@ -43,8 +44,29 @@ describe('PurchaseOrderService', () => {
     prisma.purchaseOrder.create.mockResolvedValue({ id: 'po-1' });
     prisma.purchaseOrder.findUniqueOrThrow.mockResolvedValue({ id: 'po-1', details: [] });
     prisma.purchaseDetail.create.mockResolvedValue({});
-
     const result = await service.create({ supplierId: 'supplier-1', warehouseId: 'warehouse-1', details: [{ productId: 'product-1', quantity: 2, price: 10 }] });
     expect(result.id).toBe('po-1');
+  });
+
+  it('approves a draft purchase order', async () => {
+    repository.findById.mockResolvedValue({ id: 'po-1', status: 'DRAFT' });
+    repository.updateStatus.mockResolvedValue({ id: 'po-1', status: 'APPROVED' });
+    await expect(service.approve('po-1', 'user-1')).resolves.toMatchObject({ status: 'APPROVED' });
+  });
+
+  it('receives an approved order and updates inventory', async () => {
+    repository.findById.mockResolvedValue({ id: 'po-1', status: 'APPROVED', warehouseId: 'warehouse-1', details: [{ productId: 'product-1', quantity: 2 }] });
+    repository.updateStatus.mockResolvedValue({ id: 'po-1', status: 'RECEIVED' });
+    await expect(service.receive('po-1', 'user-1')).resolves.toMatchObject({ status: 'RECEIVED' });
+  });
+
+  it('rejects canceling a received order', async () => {
+    repository.findById.mockResolvedValue({ id: 'po-1', status: 'RECEIVED' });
+    await expect(service.cancel('po-1', 'user-1')).rejects.toThrow(BadRequestException);
+  });
+
+  it('throws not found for unknown order', async () => {
+    repository.findById.mockResolvedValue(null);
+    await expect(service.approve('missing', 'user-1')).rejects.toThrow(NotFoundException);
   });
 });

@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { USER_REPOSITORY } from './repositories/user.repository.interface';
 import { PrismaService } from '../../database/prisma/prisma.service';
@@ -30,6 +31,7 @@ describe('UserService', () => {
     }).compile();
 
     service = module.get<UserService>(UserService);
+    jest.clearAllMocks();
   });
 
   it('creates a user', async () => {
@@ -42,5 +44,27 @@ describe('UserService', () => {
 
     expect(result?.username).toBe('john');
     expect(repository.save).toHaveBeenCalled();
+  });
+
+  it('rejects duplicate username', async () => {
+    repository.findByUsername.mockResolvedValue({ id: '1' });
+    await expect(service.create({ username: 'john', password: 'password123', email: 'john@example.com' } as any)).rejects.toThrow(BadRequestException);
+  });
+
+  it('updates a user', async () => {
+    repository.findById.mockResolvedValue({ id: '1', username: 'john' });
+    repository.update.mockResolvedValue({ id: '1', username: 'jane' });
+    await expect(service.update('1', { username: 'jane' } as any)).resolves.toMatchObject({ username: 'jane' });
+  });
+
+  it('throws when deleting unknown user', async () => {
+    repository.findById.mockResolvedValue(null);
+    await expect(service.delete('missing')).rejects.toThrow(NotFoundException);
+  });
+
+  it('assigns roles and clears permissions cache', async () => {
+    repository.findById.mockResolvedValue({ id: '1' });
+    const result = await service.assignRoles('1', ['role-1']);
+    expect(result).toBeDefined();
   });
 });

@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { PRODUCT_REPOSITORY } from './repositories/product.repository.interface';
 import { PrismaService } from '../../database/prisma/prisma.service';
@@ -29,16 +30,29 @@ describe('ProductService', () => {
     }).compile();
 
     service = module.get<ProductService>(ProductService);
+    jest.clearAllMocks();
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  it('should create a product', async () => {
+  it('creates a product', async () => {
     const dto = { name: 'Widget' };
     repo.create.mockResolvedValue({ id: '1', name: 'Widget' });
-
     await expect(service.create(dto as any)).resolves.toEqual({ id: '1', name: 'Widget' });
+  });
+
+  it('updates an existing product', async () => {
+    repo.findById.mockResolvedValue({ id: '1', name: 'Widget' });
+    repo.update.mockResolvedValue({ id: '1', name: 'Updated' });
+    await expect(service.update('1', { name: 'Updated' } as any)).resolves.toMatchObject({ name: 'Updated' });
+  });
+
+  it('throws when deleting missing product', async () => {
+    repo.findById.mockResolvedValue(null);
+    await expect(service.remove('missing')).rejects.toThrow(NotFoundException);
+  });
+
+  it('returns cached barcode lookup', async () => {
+    const redis = (service as any).redisService;
+    redis.get.mockResolvedValue({ id: '1', barcode: 'ABC' });
+    await expect(service.getByBarcode('ABC')).resolves.toMatchObject({ barcode: 'ABC' });
   });
 });
