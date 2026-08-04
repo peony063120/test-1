@@ -1,0 +1,447 @@
+# 13. Prisma Schema Design
+
+## 1. Mục tiêu
+Prisma schema dưới đây là bản thiết kế dữ liệu thực tế cho hệ thống, phù hợp với mô hình 3NF, foreign key, unique constraint, index và transaction.
+
+## 2. Prisma schema
+```prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  LOCKED
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  RECEIVED
+  CANCELLED
+}
+
+enum SalesOrderStatus {
+  DRAFT
+  PENDING_PAYMENT
+  CONFIRMED
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+enum StockTransactionType {
+  IMPORT
+  EXPORT
+  ADJUSTMENT
+  RETURN
+  TRANSFER
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+model User {
+  id           String     @id @default(uuid())
+  username     String     @unique
+  passwordHash String
+  email        String     @unique
+  phone        String?
+  avatar       String?
+  status       UserStatus @default(ACTIVE)
+  lastLogin    DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  deletedAt    DateTime?
+
+  roles        UserRole[]
+  sessions     UserSession[]
+  auditLogs    AuditLog[]
+  notifications NotificationRecipient[]
+  files        FileUpload[]
+  scanLogs     BarcodeScanLog[]
+  purchases    PurchaseOrder[] @relation("PurchaseOrderCreatedBy")
+  sales        SalesOrder[]    @relation("SalesOrderCreatedBy")
+  priceChanges ProductPriceHistory[] @relation("PriceChangedBy")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles       RolePermission[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+model UserSession {
+  id               String    @id @default(uuid())
+  userId           String
+  refreshTokenHash String    @unique
+  deviceInfo       String?
+  ip               String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  parentId    String?
+  name        String
+  description String?
+  image       String?
+  status      String     @default("ACTIVE")
+  createdAt   DateTime   @default(now())
+
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+}
+
+model Brand {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  logo        String?
+  createdAt   DateTime  @default(now())
+
+  products    Product[]
+}
+
+model Supplier {
+  id           String    @id @default(uuid())
+  companyName  String
+  contactName  String?
+  phone        String?
+  email        String?
+  address      String?
+  taxCode      String?   @unique
+  createdAt    DateTime  @default(now())
+
+  products     Product[]
+  purchaseOrders PurchaseOrder[]
+}
+
+model Warehouse {
+  id          String    @id @default(uuid())
+  name        String
+  location    String?
+  description String?
+  createdAt   DateTime  @default(now())
+
+  inventories Inventory[]
+  purchaseOrders PurchaseOrder[]
+}
+
+model Product {
+  id           String         @id @default(uuid())
+  sku          String         @unique
+  barcode      String         @unique
+  name         String
+  slug         String         @unique
+  description  String?
+  costPrice    Decimal
+  salePrice    Decimal
+  status       ProductStatus  @default(ACTIVE)
+  weight       Decimal?
+  unit         String?
+  categoryId   String?
+  brandId      String?
+  supplierId   String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?
+
+  category     Category?      @relation(fields: [categoryId], references: [id])
+  brand        Brand?         @relation(fields: [brandId], references: [id])
+  supplier     Supplier?      @relation(fields: [supplierId], references: [id])
+  images       ProductImage[]
+  variants     ProductVariant[]
+  priceHistory ProductPriceHistory[]
+  inventories  Inventory[]
+  purchaseDetails PurchaseDetail[]
+  salesDetails SalesDetail[]
+  scanLogs     BarcodeScanLog[]
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  imageUrl  String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model ProductVariant {
+  id        String   @id @default(uuid())
+  productId String
+  name      String
+  value     String
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model ProductPriceHistory {
+  id           String   @id @default(uuid())
+  productId    String
+  costPrice    Decimal
+  salePrice    Decimal
+  changedBy    String
+  effectiveAt  DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+  changer User    @relation("PriceChangedBy", fields: [changedBy], references: [id])
+}
+
+model Inventory {
+  id                String   @id @default(uuid())
+  productId         String
+  warehouseId       String
+  quantity          Decimal
+  minimumQuantity   Decimal  @default(0)
+  maximumQuantity   Decimal?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  product   Product @relation(fields: [productId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  transactions StockTransaction[]
+
+  @@unique([productId, warehouseId])
+}
+
+model StockTransaction {
+  id              String               @id @default(uuid())
+  inventoryId     String
+  transactionType StockTransactionType
+  quantity        Decimal
+  beforeQuantity  Decimal
+  afterQuantity   Decimal
+  referenceId     String?
+  referenceType   String?
+  createdBy       String?
+  createdAt       DateTime             @default(now())
+
+  inventory Inventory @relation(fields: [inventoryId], references: [id])
+}
+
+model PurchaseOrder {
+  id           String               @id @default(uuid())
+  supplierId   String
+  warehouseId  String
+  status       PurchaseOrderStatus  @default(DRAFT)
+  totalAmount  Decimal              @default(0)
+  totalTax     Decimal              @default(0)
+  totalDiscount Decimal             @default(0)
+  createdBy    String
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  supplier  Supplier @relation(fields: [supplierId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  creator   User     @relation("PurchaseOrderCreatedBy", fields: [createdBy], references: [id])
+  details   PurchaseDetail[]
+}
+
+model PurchaseDetail {
+  id              String   @id @default(uuid())
+  purchaseOrderId String
+  productId       String
+  quantity        Decimal
+  price           Decimal
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  product       Product       @relation(fields: [productId], references: [id])
+}
+
+model SalesOrder {
+  id             String              @id @default(uuid())
+  customerId     String
+  status         SalesOrderStatus    @default(DRAFT)
+  totalAmount    Decimal             @default(0)
+  totalTax       Decimal             @default(0)
+  totalDiscount  Decimal             @default(0)
+  createdBy      String
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  creator  User     @relation("SalesOrderCreatedBy", fields: [createdBy], references: [id])
+  details  SalesDetail[]
+}
+
+model SalesDetail {
+  id           String   @id @default(uuid())
+  salesOrderId String
+  productId    String
+  quantity     Decimal
+  price        Decimal
+
+  salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id])
+  product    Product    @relation(fields: [productId], references: [id])
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  createdAt DateTime @default(now())
+
+  salesOrders SalesOrder[]
+}
+
+model Employee {
+  id        String   @id @default(uuid())
+  name      String
+  position  String?
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id          String             @id @default(uuid())
+  title       String
+  content     String
+  status      NotificationStatus @default(UNREAD)
+  type        NotificationType   @default(INFO)
+  priority    String            @default("NORMAL")
+  createdAt   DateTime           @default(now())
+
+  recipients  NotificationRecipient[]
+}
+
+model NotificationRecipient {
+  id             String    @id @default(uuid())
+  notificationId String
+  userId         String
+  deliveredAt    DateTime?
+  readAt         DateTime?
+
+  notification Notification @relation(fields: [notificationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  oldValue  Json?
+  newValue  Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}
+
+model FileUpload {
+  id           String   @id @default(uuid())
+  uploadedBy   String?
+  fileName     String
+  originalName String
+  url          String
+  storageKey   String
+  type         String
+  size         Int
+  mimeType     String?
+  createdAt    DateTime @default(now())
+
+  uploader User? @relation(fields: [uploadedBy], references: [id])
+}
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  dataType    String   @default("STRING")
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model BarcodeScanLog {
+  id           String   @id @default(uuid())
+  userId       String?
+  barcode      String
+  source       String?
+  productId    String?
+  resultStatus String
+  createdAt    DateTime @default(now())
+
+  user    User?    @relation(fields: [userId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+}
+```
+
+## 3. Nhận xét về schema
+- Schema đã tách các bảng số dư tồn kho và nhật ký giao dịch để hỗ trợ audit và reporting tốt hơn.
+- Mỗi bảng đều có khóa chính và quan hệ rõ ràng, phù hợp với clean design.
+- Cấu trúc này có thể hỗ trợ triển khai thực tế trên PostgreSQL và chạy tốt với Prisma.
+
+## 4. Khuyến nghị tiếp theo
+- Tạo migration đầu tiên bằng Prisma Migrate.
+- Thêm index cho các cột thường query như `barcode`, `sku`, `status`, `createdAt`.
+- Nếu cần scale lớn, nên bổ sung `tenantId` hoặc `companyId` cho SaaS multi-tenant.
