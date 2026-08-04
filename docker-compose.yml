@@ -41,5 +41,27 @@ services:
       - "9200:9200"
       - "9300:9300"
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pms-backend
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - elasticsearch
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/product_management
+      JWT_SECRET: change-me
+      JWT_REFRESH_SECRET: change-me-refresh
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      PORT: 3000
+    ports:
+      - "3000:3000"
+
 volumes:
   postgres_data:

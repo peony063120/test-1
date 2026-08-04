@@ -4,5 +4,12 @@ dist
 .git
 .gitignore
 .env
+.env.*
 coverage
 logs
+.vscode
+.idea
+backend/node_modules
+backend/dist
+backend/.env
+backend/.env.*
