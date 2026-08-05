@@ -1,0 +1,2 @@
+import CrudPage from '@/components/common/Crud/CrudPage'; import { brandApi, type Brand, type BrandPayload } from '@/api/endpoints/brand.api';
+export default () => <CrudPage<Brand, BrandPayload> title="Thương hiệu" resourceKey="brands" service={brandApi} nameOf={(row) => row.name} fields={[{ name: 'name', label: 'Tên thương hiệu', required: true }, { name: 'description', label: 'Mô tả' }, { name: 'logo', label: 'Logo URL' }]} />;

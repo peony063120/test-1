@@ -1,0 +1,3 @@
+import api from '@/api/axios.config'; import type { PaginatedResponse } from '@/types/common.types';
+export interface AppNotification { id: string; title: string; content?: string; isRead: boolean; createdAt: string; }
+export const notificationApi = { list: async (params: Record<string, unknown> = {}) => (await api.get<PaginatedResponse<AppNotification> | AppNotification[]>('/notifications', { params })).data, unreadCount: async () => (await api.get<number | { count: number }>('/notifications/unread-count')).data, markRead: async (id: string) => (await api.patch(`/notifications/${id}/read`)).data, markAllRead: async () => (await api.patch('/notifications/read-all')).data };

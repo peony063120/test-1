@@ -1,0 +1,5 @@
+import api from '@/api/axios.config'; import type { PaginatedResponse } from '@/types/common.types';
+export interface Permission { id: string; code: string; name?: string; description?: string; }
+export interface Role { id: string; name: string; description?: string; permissions?: Permission[]; }
+export const roleApi = { list: async () => (await api.get<PaginatedResponse<Role> | Role[]>('/roles')).data, get: async (id: string) => (await api.get<Role>(`/roles/${id}`)).data, create: async (payload: Pick<Role, 'name' | 'description'>) => (await api.post<Role>('/roles', payload)).data, update: async (id: string, payload: Partial<Pick<Role, 'name' | 'description'>>) => (await api.put<Role>(`/roles/${id}`, payload)).data, assignPermissions: async (id: string, permissionIds: string[]) => (await api.post<Role>(`/roles/${id}/permissions`, { permissionIds })).data, removePermission: async (id: string, permissionId: string) => (await api.delete(`/roles/${id}/permissions/${permissionId}`)).data };
+export const permissionApi = { list: async () => (await api.get<PaginatedResponse<Permission> | Permission[]>('/permissions')).data };

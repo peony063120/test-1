@@ -1,0 +1,2 @@
+import CrudPage from '@/components/common/Crud/CrudPage'; import { supplierApi, type Supplier, type SupplierPayload } from '@/api/endpoints/supplier.api';
+export default () => <CrudPage<Supplier, SupplierPayload> title="Nhà cung cấp" resourceKey="suppliers" service={supplierApi} nameOf={(row) => row.companyName} fields={[{ name: 'companyName', label: 'Công ty', required: true }, { name: 'contactName', label: 'Người liên hệ' }, { name: 'phone', label: 'Số điện thoại' }, { name: 'email', label: 'Email', type: 'email' }]} />;

@@ -1,0 +1,2 @@
+import CrudPage from '@/components/common/Crud/CrudPage'; import { categoryApi, type Category, type CategoryPayload } from '@/api/endpoints/category.api';
+export default () => <CrudPage<Category, CategoryPayload> title="Danh mục" resourceKey="categories" service={categoryApi} nameOf={(row) => row.name} fields={[{ name: 'name', label: 'Tên danh mục', required: true }, { name: 'description', label: 'Mô tả' }, { name: 'parentId', label: 'ID danh mục cha' }]} />;
