@@ -23,6 +23,7 @@ Hệ thống Quản lý sản phẩm và kho hàng doanh nghiệp nhằm hỗ tr
 | Refresh Token | Tạo và refresh token an toàn |
 | RBAC | Phân quyền theo role và permission |
 | Quản lý người dùng | Tạo, sửa, khóa/mở khóa user |
+| Tạo tài khoản thủ kho | Admin tạo user với role WAREHOUSE_STAFF để dùng cho nhập hàng và quản lý kho |
 | Audit | Ghi lại hành động bảo mật |
 
 ### 3.2 Dashboard

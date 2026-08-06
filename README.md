@@ -1,79 +1,84 @@
 # Product Management System
 
-He thong quan ly san pham gom:
-- Backend NestJS + Prisma + PostgreSQL + Redis
-- Frontend React + Vite
-- Phan quyen theo vai tro: `ADMIN`, `WAREHOUSE_STAFF`, `SALES_STAFF`, `MANAGER`
+A full-stack product, inventory, purchase, sales, and role-based access management system built with:
 
-README nay duoc viet lai de nguoi dung moi co the chay duoc nhanh, biet can cau hinh file nao, va xu ly duoc cac loi pho bien nhu dang ky that bai hoac frontend khong goi duoc API.
+- Backend: NestJS, Prisma, PostgreSQL, Redis
+- Frontend: React, Vite, MUI
+- Roles: `ADMIN`, `MANAGER`, `WAREHOUSE_STAFF`, `SALES_STAFF`
 
-## 1. Kien truc thu muc
+This README explains how to run the project locally, which files matter, and how to recover from the most common setup issues such as registration failures or API connectivity problems.
 
-- `backend/`: API NestJS, Prisma schema, seed, test
-- `frontend/`: giao dien React + Vite
-- `docs/`: tai lieu thiet ke, API, bao mat
-- `docker-compose.yml`: bo service local de chay nhanh
+## Repository Layout
 
-## 2. Yeu cau truoc khi chay
+- `backend/`: NestJS API, Prisma schema, seed data, and tests
+- `frontend/`: React + Vite UI
+- `docs/`: functional requirements, use cases, API design, security notes, and architecture docs
+- `docker-compose.yml`: local infrastructure for fast setup
 
-Can co:
+## Prerequisites
+
+You will need:
+
 - Node.js 20+
 - npm 10+
-- Docker Desktop neu muon chay nhanh bang container
+- Docker Desktop if you want to start the supporting services quickly
 
-## 3. Cach chay nhanh nhat: Docker
+## Fastest Way to Run: Docker
 
-Tai thu muc goc project:
+From the repository root:
 
 ```powershell
 docker compose up -d --build
 ```
 
-Sau khi len service:
+After the services are up:
+
 - Backend API: http://localhost:3000/api/v1
-- Swagger: http://localhost:3000/docs
+- Swagger UI: http://localhost:3000/docs
 - PostgreSQL: localhost:5432
 - Redis: localhost:6379
 - RabbitMQ UI: http://localhost:15672
 - Elasticsearch: http://localhost:9200
 
-Tat toan bo:
+To stop everything:
 
 ```powershell
 docker compose down
 ```
 
-Luu y:
-- Docker compose hien tai chi chay backend service, khong tu dong chay frontend dev server.
-- Frontend van nen chay rieng bang `npm run dev` trong thu muc `frontend`.
+Notes:
 
-## 4. Cach chay local dung nhat
+- Docker Compose starts the backend and infrastructure services, not the frontend dev server.
+- Run the frontend separately with `npm run dev` inside `frontend`.
 
-### 4.1. Buoc 1: chay ha tang
+## Recommended Local Setup
 
-Neu khong muon chay full backend bang Docker, hay chi bat cac dependency:
+### 1. Start the infrastructure
+
+If you do not want to run everything through Docker, you can start just the dependencies:
 
 ```powershell
 docker compose up -d postgres redis rabbitmq elasticsearch
 ```
 
-### 4.2. Buoc 2: cau hinh backend
+### 2. Configure the backend
 
-File env can dung la:
+The backend environment file is:
+
 - `backend/.env`
 
-Neu chua co file nay:
+If it does not exist yet:
 
 ```powershell
 cd backend
 Copy-Item .env.example .env
 ```
 
-Gia tri mac dinh trong `backend/.env.example` da phu hop voi docker local.
+The default values in `backend/.env.example` are suitable for local Docker-based development.
 
-### 4.3. Buoc 3: khoi tao database
+### 3. Initialize the database
 
-Van trong `backend`:
+Run these commands from the `backend` folder:
 
 ```powershell
 npm install
@@ -82,25 +87,27 @@ npm run prisma:migrate
 npm run prisma:seed
 ```
 
-Day la buoc rat quan trong. Neu bo qua `prisma:seed`, he thong van co the khoi dong nhung:
-- tai khoan `admin` se khong co
-- role/permission co the thieu
-- mot so chuc nang phan quyen se khong day du
+This step is important. If you skip `prisma:seed`, the app may still start, but:
 
-### 4.4. Buoc 4: chay backend
+- the default `admin` account will not exist
+- some roles and permissions may be missing
+- several authorization flows will be incomplete
+
+### 4. Start the backend
 
 ```powershell
 npm run start:dev
 ```
 
-Backend mac dinh chay tai:
+Backend defaults:
+
 - http://localhost:3000
 - API prefix: `/api/v1`
 - Swagger: http://localhost:3000/docs
 
-### 4.5. Buoc 5: chay frontend
+### 5. Start the frontend
 
-Mo terminal moi:
+Open a second terminal:
 
 ```powershell
 cd frontend
@@ -108,97 +115,111 @@ npm install
 npm run dev
 ```
 
-Frontend mac dinh chay tai:
+Frontend defaults:
+
 - http://localhost:5173
 
-## 5. Dang nhap va dang ky
+## Login and Registration
 
-### 5.1. Tai khoan mac dinh sau khi seed
+### Default seeded account
 
-Sau `npm run prisma:seed`, co san tai khoan:
+After `npm run prisma:seed`, the following account is available:
+
 - username: `admin`
 - password: `admin123`
 
-### 5.2. Dang nhap
+### Login
 
-Trang dang nhap cho phep nhap:
+The login page accepts:
+
 - username
-- hoac email
+- email
 
-Sau dang nhap, he thong tu dong dieu huong theo role:
-- `ADMIN` -> man hinh admin
-- `WAREHOUSE_STAFF` -> man hinh kho / nhap hang
-- `SALES_STAFF` -> man hinh POS / ban hang
-- `MANAGER` -> man hinh dashboard bao cao
+After login, the app redirects based on the user role:
 
-### 5.3. Dang ky
+- `ADMIN` -> admin dashboard
+- `WAREHOUSE_STAFF` -> warehouse / intake screen
+- `SALES_STAFF` -> POS / sales screen
+- `MANAGER` -> reporting dashboard
 
-Trang dang ky cho phep tao tai khoan moi voi 3 role:
+### Registration
+
+Public registration supports these roles:
+
 - `SALES_STAFF`
 - `WAREHOUSE_STAFF`
 - `MANAGER`
 
-`ADMIN` khong duoc mo dang ky cong khai.
+`ADMIN` is intentionally not available through public registration.
 
-Neu ban vua sua code hoac DB moi tinh, van nen chay `npm run prisma:seed` de co du bo role/permission mac dinh.
+If you just changed code or recreated the database, run `npm run prisma:seed` again so the default roles and permissions are present.
 
-Luu y quan trong:
-- Ban moi tao co duoc role co ban ngay khi dang ky
-- Backend hien da tu dong tao role/phien quyen can thiet neu DB chua seed day du
-- Tuy vay, seed van la cach on dinh nhat de co du du lieu he thong
+Important notes:
 
-## 6. Vai tro va chuc nang
+- Newly registered accounts receive the selected base role immediately
+- The backend will bootstrap missing roles and permissions when needed
+- Seeding remains the most reliable way to ensure the local database is complete
+
+## Roles and Capabilities
 
 ### Admin
-- Dashboard tong quan
-- Quan ly user
-- Quan ly role/quyen
-- Cau hinh he thong
-- Xem audit log
-- Toan quyen thao tac du lieu
+
+- Overview dashboard
+- User management
+- Role and permission management
+- System settings
+- Audit logs
+- Full access to the data model
 
 ### Warehouse Staff
-- Tao phiếu nhap kho
-- Cap nhat ton kho
-- Quan ly nha cung cap
-- Khong duoc sua gia ban
-- Khong duoc xoa san pham
-- Khong xem bao cao doanh thu nhu manager
+
+- Create purchase intake flows
+- Update inventory
+- Manage suppliers
+- Cannot change selling prices
+- Cannot delete products
+- Does not see manager-only revenue reports
 
 ### Sales Staff
-- Giao dien POS
-- Nhap ma san pham hoac quet camera
-- Tao don hang
-- In hoa don
-- Khong duoc nhap hang
-- Khong duoc sua gia san pham
+
+- POS interface
+- Manual barcode input and camera scanning
+- Create sales orders
+- Print invoices
+- Cannot receive goods
+- Cannot edit product prices
 
 ### Manager
-- Dashboard thong ke
-- Bao cao ton kho
-- Bao cao nhap xuat, doanh thu
-- Chi xem, khong tao/sua/xoa
 
-## 7. Camera va nhap ma san pham
+- KPI dashboard
+- Inventory reports
+- Inventory movement reports
+- Read-only access for most workflows
 
-Vai tro `SALES_STAFF` co man hinh POS voi:
-- o nhap barcode thu cong
-- nut mo camera
-- tim san pham theo barcode
-- them vao gio hang
-- tao don hang
-- in hoa don
+## Barcode and Camera Workflows
 
-Neu camera khong mo duoc:
-- kiem tra trinh duyet da cap quyen camera chua
-- neu chay tren host khac, dam bao site hop le cho `getUserMedia`
-- van co the dung o nhap ma thu cong de thay the
+The `SALES_STAFF` POS screen includes:
 
-## 8. Bien moi truong quan trong
+- manual barcode input
+- camera scan button
+- product lookup by barcode
+- add-to-cart flow
+- sales order creation
+- invoice printing
 
-File dung cho backend: `backend/.env`
+If the camera does not start:
 
-Cac bien quan trong:
+- check whether the browser granted camera permission
+- make sure the site is served from a valid origin for `getUserMedia`
+- manual barcode input still works as a fallback
+
+## Important Environment Variables
+
+Backend file:
+
+- `backend/.env`
+
+Example values:
 
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/product_management
@@ -211,19 +232,19 @@ ELASTICSEARCH_URL=http://localhost:9200
 PORT=3000
 ```
 
-Frontend co the su dung them:
+Frontend can also use:
+
 - `VITE_API_URL`
 
-Neu khong set, frontend se mac dinh goi:
-- `/api/v1`
+If not set, the frontend defaults to `/api/v1`.
 
-Neu frontend chay tai `5173` va backend tai `3000`, co the dat:
+If the frontend runs on `5173` and the backend on `3000`, set:
 
 ```env
 VITE_API_URL=http://localhost:3000/api/v1
 ```
 
-## 9. Lenh thuong dung
+## Common Commands
 
 ### Backend
 
@@ -247,63 +268,70 @@ npm run build
 npm test
 ```
 
-Luu y:
-- `npm run build` o root la script cho backend
-- build frontend phai chay trong thu muc `frontend`
+Notes:
 
-## 10. Kiem tra nhanh neu he thong khong chay dung
+- Root `npm run build` is currently the backend build script
+- Frontend builds must be run from the `frontend` folder
 
-### Truong hop 1: Dang ky that bai
+## Troubleshooting
 
-Kiem tra theo thu tu nay:
-1. Backend co dang chay khong
-2. PostgreSQL co dang chay khong
-3. `backend/.env` co ton tai khong
-4. Da chay `npm run prisma:migrate` chua
-5. Da chay `npm run prisma:seed` chua
+### 1. Registration fails
 
-Neu can reset nhanh du lieu role/user local:
+Check these in order:
 
-```powershell
-cd backend
-npm run prisma:seed
-```
+1. Is the backend running?
+2. Is PostgreSQL running?
+3. Does `backend/.env` exist?
+4. Have you run `npm run prisma:migrate`?
+5. Have you run `npm run prisma:seed`?
 
-### Truong hop 2: Dang nhap xong nhung bi 401 lien tuc
-
-Thu lan luot:
-1. Xoa token trong `localStorage`
-2. Dang nhap lai
-3. Kiem tra `JWT_SECRET` va `JWT_REFRESH_SECRET`
-4. Kiem tra backend va frontend co dang dung cung API prefix khong
-
-### Truong hop 3: Frontend khong goi duoc API
-
-Kiem tra:
-- backend dang chay tai `http://localhost:3000`
-- frontend dang goi dung `VITE_API_URL`
-- CORS cua backend cho phep domain frontend
-
-### Truong hop 4: Swagger vao duoc nhung mot so chuc nang bi Forbidden
-
-Ly do thuong gap:
-- tai khoan dang co khong dung role
-- DB chua co du permission/role
-- chua seed xong sau khi cap nhat schema logic
-
-Cach xu ly:
+To reseed local data quickly:
 
 ```powershell
 cd backend
 npm run prisma:seed
 ```
 
-## 11. API quan trong
+### 2. Login works, but you keep getting 401 responses
+
+Try this sequence:
+
+1. Clear the tokens from `localStorage`
+2. Log in again
+3. Verify `JWT_SECRET` and `JWT_REFRESH_SECRET`
+4. Confirm the frontend and backend are using the same API prefix
+
+### 3. The frontend cannot reach the API
+
+Check that:
+
+- backend is running at `http://localhost:3000`
+- the frontend is configured with the correct `VITE_API_URL`
+- backend CORS allows the frontend origin
+
+### 4. Swagger works, but some endpoints return Forbidden
+
+This usually means:
+
+- the current account has the wrong role
+- the database is missing permissions or role mappings
+- the schema or seed data was changed and not re-applied
+
+Fix:
+
+```powershell
+cd backend
+npm run prisma:seed
+```
+
+## Key API Endpoints
 
 Base URL:
+
 - `http://localhost:3000/api/v1`
 
-Cac endpoint co ban:
+Core endpoints:
+
 - `POST /auth/register`
 - `POST /auth/login`
 - `POST /auth/refresh`
@@ -311,13 +339,14 @@ Cac endpoint co ban:
 - `GET /products`
 - `GET /products/barcode/:barcode`
 
-Chi tiet day du xem tren Swagger.
+See Swagger for the full list.
 
-## 12. Trang thai hien tai da duoc xac minh
+## Verified Status
 
-Da kiem tra thanh cong:
-- backend build pass
-- frontend build pass
-- auth integration test pass
+The following checks have already passed:
 
-Neu ban gap loi dang ky trong local, kha nang cao nhat la backend chua duoc migrate/seed dung cach hoac DB dang chua chay.
+- backend build
+- frontend build
+- auth integration flow
+
+If registration fails locally, the most likely causes are incomplete migration/seed steps or a database that is not running.

@@ -16,6 +16,7 @@
 |---|---|---|
 | Login | Admin, Manager, Staff | Đăng nhập hệ thống |
 | Manage User | Admin | Tạo/sửa/khóa user |
+| Create Warehouse Account | Admin | Tạo tài khoản thủ kho với role WAREHOUSE_STAFF và quyền nhập kho |
 | Manage Role & Permission | Admin | Phân quyền RBAC |
 | Manage Product | Manager, Staff | CRUD sản phẩm |
 | Search Product | All | Tìm sản phẩm bằng tên/SKU/barcode |

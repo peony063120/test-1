@@ -9,7 +9,7 @@ export interface AuthUser {
   email?: string;
   firstName?: string;
   lastName?: string;
-  roles?: Role[];
+  roles?: Array<Role | string>;
   permissions: string[];
 }
 

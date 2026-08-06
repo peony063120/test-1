@@ -1,5 +1,5 @@
 import api from '@/api/axios.config'; import type { PaginatedResponse } from '@/types/common.types';
-export interface ManagedUser { id: string; username: string; email?: string; phone?: string; avatar?: string; status: string; roles?: { id: string; name: string }[]; lastLogin?: string; }
+export interface ManagedUser { id: string; username: string; email?: string; phone?: string; avatar?: string; status: string; roles?: { id: string; name: string }[]; permissions?: string[]; lastLogin?: string; createdAt?: string; updatedAt?: string; }
 export interface UserPayload { username: string; password?: string; email?: string; phone?: string; avatar?: string; status?: string; roleIds?: string[]; }
 export const userApi = {
 	list: async (params: Record<string, unknown> = {}) => (await api.get<PaginatedResponse<ManagedUser> | ManagedUser[]>('/users', { params })).data,

@@ -8,6 +8,7 @@ const Login = lazy(() => import('@/components/features/auth/Login'));
 const Register = lazy(() => import('@/components/features/auth/Register'));
 const Dashboard = lazy(() => import('@/components/features/dashboard/Dashboard'));
 const UserList = lazy(() => import('@/components/features/user/UserList'));
+const UserDetail = lazy(() => import('@/components/features/user/UserDetail'));
 const UserForm = lazy(() => import('@/components/features/user/UserForm'));
 const RoleList = lazy(() => import('@/components/features/role/RoleList'));
 const ReportInventory = lazy(() => import('@/components/features/report/ReportInventory'));
@@ -17,9 +18,11 @@ const ProductList = lazy(() => import('@/components/features/product/ProductList
 const ProductForm = lazy(() => import('@/components/features/product/ProductForm'));
 const InventoryList = lazy(() => import('@/components/features/inventory/InventoryList'));
 const InventoryAdjust = lazy(() => import('@/components/features/inventory/InventoryAdjust'));
+const StockTransactionHistory = lazy(() => import('@/components/features/inventory/StockTransactionHistory'));
 const PurchaseOrderList = lazy(() => import('@/components/features/purchase-order/PurchaseOrderList'));
 const SalesOrderList = lazy(() => import('@/components/features/sales-order/SalesOrderList'));
 const SupplierList = lazy(() => import('@/components/features/supplier/SupplierList'));
+const WarehouseIntake = lazy(() => import('@/components/features/warehouse/WarehouseIntake'));
 const AdminHome = lazy(() => import('@/components/features/portal/AdminHome'));
 const WarehouseHome = lazy(() => import('@/components/features/portal/WarehouseHome'));
 const ManagerHome = lazy(() => import('@/components/features/portal/ManagerHome'));
@@ -39,10 +42,12 @@ export const router = createBrowserRouter([
       children: [
         { index: true, element: <Navigate to="/dashboard" replace /> },
         { path: '/dashboard', element: lazyElement(<Dashboard />) },
+        { path: '/profile', element: lazyElement(<UserDetail />) },
 
         { element: <PrivateRoute allowedRoles={['ADMIN']} />, children: [
           { path: '/admin', element: lazyElement(<AdminHome />) },
           { path: '/users', element: lazyElement(<UserList />) },
+          { path: '/users/:id', element: lazyElement(<UserDetail />) },
           { path: '/users/new', element: lazyElement(<UserForm />) },
           { path: '/roles', element: lazyElement(<RoleList />) },
           { path: '/settings', element: lazyElement(<SystemSettings />) },
@@ -53,10 +58,15 @@ export const router = createBrowserRouter([
 
         { element: <PrivateRoute allowedRoles={['ADMIN', 'WAREHOUSE_STAFF']} />, children: [
           { path: '/warehouse', element: lazyElement(<WarehouseHome />) },
+          { path: '/warehouse/intake', element: lazyElement(<WarehouseIntake />) },
           { path: '/purchase-orders', element: lazyElement(<PurchaseOrderList />) },
           { path: '/inventories', element: lazyElement(<InventoryList />) },
           { path: '/inventories/:id/adjust', element: lazyElement(<InventoryAdjust />) },
           { path: '/suppliers', element: lazyElement(<SupplierList />) },
+        ] },
+
+        { element: <PrivateRoute allowedRoles={['ADMIN', 'WAREHOUSE_STAFF', 'MANAGER']} />, children: [
+          { path: '/stock-transactions', element: lazyElement(<StockTransactionHistory />) },
         ] },
 
         { element: <PrivateRoute allowedRoles={['ADMIN', 'SALES_STAFF']} />, children: [

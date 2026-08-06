@@ -12,7 +12,7 @@ export type AppRole =
   | typeof ROLE_SALES;
 
 export const getUserRoleNames = (user: AuthUser | null | undefined): string[] =>
-  user?.roles?.map((role) => role.name) || [];
+  user?.roles?.map((role) => (typeof role === 'string' ? role : role.name)) || [];
 
 export const hasRole = (user: AuthUser | null | undefined, role: AppRole): boolean =>
   getUserRoleNames(user).includes(role);

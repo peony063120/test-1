@@ -16,7 +16,20 @@ export class StockTransactionRepositoryImpl implements IStockTransactionReposito
     const skip = (page - 1) * limit;
     const where = { inventoryId };
     const [data, total] = await this.prisma.$transaction([
-      this.prisma.stockTransaction.findMany({ where, skip, take: limit, orderBy: { createdAt: 'desc' } }),
+      this.prisma.stockTransaction.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          inventory: {
+            include: {
+              product: true,
+              warehouse: true,
+            },
+          },
+        },
+      }),
       this.prisma.stockTransaction.count({ where }),
     ]);
     return { data, total };
@@ -28,7 +41,19 @@ export class StockTransactionRepositoryImpl implements IStockTransactionReposito
     const skip = (page - 1) * limit;
     const where = { inventory: { productId } };
     const [data, total] = await this.prisma.$transaction([
-      this.prisma.stockTransaction.findMany({ where, skip, take: limit, include: { inventory: true } }),
+      this.prisma.stockTransaction.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          inventory: {
+            include: {
+              product: true,
+              warehouse: true,
+            },
+          },
+        },
+      }),
       this.prisma.stockTransaction.count({ where }),
     ]);
     return { data, total };
@@ -39,7 +64,17 @@ export class StockTransactionRepositoryImpl implements IStockTransactionReposito
   }
 
   async findById(id: string) {
-    return this.prisma.stockTransaction.findUnique({ where: { id } });
+    return this.prisma.stockTransaction.findUnique({
+      where: { id },
+      include: {
+        inventory: {
+          include: {
+            product: true,
+            warehouse: true,
+          },
+        },
+      },
+    });
   }
 
   async getSummary(productId: string, startDate?: Date, endDate?: Date) {

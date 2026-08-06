@@ -8,10 +8,12 @@ import {
   Menu as MenuIcon,
   PointOfSaleOutlined,
   ReceiptLongOutlined,
+  PersonOutlined,
   SettingsOutlined,
   StoreOutlined,
   SummarizeOutlined,
   WarehouseOutlined,
+  FactCheckOutlined,
 } from '@mui/icons-material';
 import { AppBar, Box, Divider, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography } from '@mui/material';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
@@ -36,6 +38,8 @@ const MainLayout = () => {
   const navItems = useMemo<NavItem[]>(() => {
     const items: NavItem[] = [{ label: 'Tổng quan', icon: <DashboardOutlined />, to: '/dashboard' }];
 
+    items.push({ label: 'Hồ sơ của tôi', icon: <PersonOutlined />, to: '/profile' });
+
     if (hasRole(user, ROLE_ADMIN)) {
       items.push(
         { label: 'Admin Dashboard', icon: <AdminPanelSettingsOutlined />, to: '/admin' },
@@ -48,11 +52,16 @@ const MainLayout = () => {
 
     if (hasRole(user, ROLE_WAREHOUSE) || hasRole(user, ROLE_ADMIN)) {
       items.push(
+        { label: 'Nhập hàng nhanh', icon: <Inventory2Outlined />, to: '/warehouse/intake' },
         { label: 'Không gian kho', icon: <WarehouseOutlined />, to: '/warehouse' },
         { label: 'Phiếu nhập hàng', icon: <Inventory2Outlined />, to: '/purchase-orders' },
         { label: 'Tồn kho', icon: <StoreOutlined />, to: '/inventories' },
         { label: 'Nhà cung cấp', icon: <StoreOutlined />, to: '/suppliers' },
       );
+    }
+
+    if (hasRole(user, ROLE_MANAGER) || hasRole(user, ROLE_WAREHOUSE) || hasRole(user, ROLE_ADMIN)) {
+      items.push({ label: 'Lịch sử nhập xuất', icon: <FactCheckOutlined />, to: '/stock-transactions' });
     }
 
     if (hasRole(user, ROLE_SALES) || hasRole(user, ROLE_ADMIN)) {

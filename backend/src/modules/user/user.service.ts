@@ -78,7 +78,16 @@ export class UserService {
   }
 
   async findById(id: string) {
-    return this.userRepository.findById(id);
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      return null;
+    }
+
+    const permissions = await this.userRepository.findPermissionsByUserId(id);
+    return {
+      ...user,
+      permissions,
+    };
   }
 
   async findByUsername(username: string) {
