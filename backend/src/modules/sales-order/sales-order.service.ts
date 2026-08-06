@@ -158,7 +158,7 @@ export class SalesOrderService {
     }
     if (current.status !== 'DRAFT' && current.status !== 'SHIPPED') throw new BadRequestException('Only draft or shipped sales orders can be canceled');
 
-    const updated = await this.salesOrderRepository.updateStatus(id, 'CANCELED');
+    const updated = await this.salesOrderRepository.updateStatus(id, 'CANCELLED');
     await this.auditLogService.log(userId, 'cancel', 'salesOrder', id, current, updated, undefined);
     return updated;
   }

@@ -156,7 +156,7 @@ export class PurchaseOrderService {
     if (current.status === 'RECEIVED') throw new BadRequestException('Received purchase orders cannot be canceled');
     if (current.status !== 'DRAFT' && current.status !== 'APPROVED') throw new BadRequestException('Only draft or approved purchase orders can be canceled');
 
-    const updated = await this.purchaseOrderRepository.updateStatus(id, 'CANCELED');
+    const updated = await this.purchaseOrderRepository.updateStatus(id, 'CANCELLED');
     await this.auditLogService.log(userId, 'cancel', 'purchaseOrder', id, current, updated, undefined);
     return updated;
   }

@@ -18,7 +18,7 @@ export class RoleController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('role.manage')
   @ApiOperation({ summary: 'List roles' })
   findAll(@Query() query: RoleQueryDto) {
     return this.roleService.findAll(query);
@@ -26,7 +26,7 @@ export class RoleController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('role.manage')
   @ApiOperation({ summary: 'Create role' })
   create(@Body() dto: CreateRoleDto, @Req() req: Request & { user?: any }) {
     return this.roleService.create(dto, req.user?.id);
@@ -34,7 +34,7 @@ export class RoleController {
 
   @Get(':id')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('role.manage')
   @ApiOperation({ summary: 'Get role by id' })
   findOne(@Param('id') id: string) {
     return this.roleService.findById(id);
@@ -42,7 +42,7 @@ export class RoleController {
 
   @Put(':id')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('role.manage')
   @ApiOperation({ summary: 'Update role' })
   update(@Param('id') id: string, @Body() dto: UpdateRoleDto, @Req() req: Request & { user?: any }) {
     return this.roleService.update(id, dto, req.user?.id);
@@ -50,7 +50,7 @@ export class RoleController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('role.manage')
   @ApiOperation({ summary: 'Delete role' })
   delete(@Param('id') id: string, @Req() req: Request & { user?: any }) {
     return this.roleService.delete(id, req.user?.id);
@@ -58,7 +58,7 @@ export class RoleController {
 
   @Post(':id/permissions')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('role.manage')
   @ApiOperation({ summary: 'Assign permissions to role' })
   assignPermissions(@Param('id') id: string, @Body('permissionIds') permissionIds: string[], @Req() req: Request & { user?: any }) {
     return this.roleService.assignPermissions(id, permissionIds, req.user?.id);
@@ -66,7 +66,7 @@ export class RoleController {
 
   @Delete(':id/permissions/:permissionId')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('role.manage')
   @ApiOperation({ summary: 'Remove permission from role' })
   removePermission(@Param('id') id: string, @Param('permissionId') permissionId: string, @Req() req: Request & { user?: any }) {
     return this.roleService.removePermission(id, permissionId, req.user?.id);

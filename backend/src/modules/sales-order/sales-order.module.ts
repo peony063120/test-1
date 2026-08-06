@@ -13,9 +13,10 @@ import { CustomerModule } from '../customer/customer.module';
 import { WarehouseModule } from '../warehouse/warehouse.module';
 import { UserModule } from '../user/user.module';
 import { SalesDetailModule } from '../sales-detail/sales-detail.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, LoggerModule, InventoryModule, ProductModule, CustomerModule, WarehouseModule, UserModule, SalesDetailModule],
+  imports: [PrismaModule, LoggerModule, InventoryModule, ProductModule, CustomerModule, WarehouseModule, UserModule, SalesDetailModule, AuthModule],
   controllers: [SalesOrderController],
   providers: [
     SalesOrderService,

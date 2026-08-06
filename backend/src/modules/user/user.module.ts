@@ -8,9 +8,10 @@ import { UserService } from './user.service';
 import { UserRepositoryImpl } from './repositories/user.repository.impl';
 import { USER_REPOSITORY } from './repositories/user.repository.interface';
 import { RoleModule } from '../role/role.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, LoggerModule, RoleModule],
+  imports: [PrismaModule, LoggerModule, RoleModule, AuthModule],
   controllers: [UserController],
   providers: [
     UserService,

@@ -44,6 +44,14 @@ export class ProductController {
     return this.productService.findAll(query);
   }
 
+  @Get('barcode/:barcode')
+  @UseGuards(RolesGuard)
+  @Roles('product.read')
+  @ApiOperation({ summary: 'Get product by barcode' })
+  findByBarcode(@Param('barcode') barcode: string) {
+    return this.productService.getByBarcode(barcode);
+  }
+
   @Get(':id')
   @UseGuards(RolesGuard)
   @Roles('product.read')

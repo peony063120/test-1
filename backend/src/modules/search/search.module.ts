@@ -4,6 +4,7 @@ import { SearchService } from './search.service';
 import { ProductModule } from '../product/product.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ElasticsearchModule } from '@nestjs/elasticsearch';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ElasticsearchModule } from '@nestjs/elasticsearch';
       inject: [ConfigService],
     }),
     ProductModule,
+    AuthModule,
   ],
   controllers: [SearchController],
   providers: [SearchService],

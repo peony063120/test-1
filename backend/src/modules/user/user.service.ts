@@ -85,6 +85,20 @@ export class UserService {
     return this.userRepository.findByUsername(username);
   }
 
+  async findByEmail(email: string) {
+    return this.userRepository.findByEmail(email);
+  }
+
+  async updatePasswordHash(id: string, passwordHash: string) {
+    const current = await this.userRepository.findById(id);
+    if (!current) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.userRepository.updatePasswordHash(id, passwordHash);
+    await this.redisService.del(`permissions:${id}`);
+  }
+
   async findAll(query: UserQueryDto) {
     return this.userRepository.findAll(query);
   }

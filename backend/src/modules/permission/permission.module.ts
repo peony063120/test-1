@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../database/prisma/prisma.module';
 import { LoggerModule } from '../../infrastructure/logger/logger.module';
+import { AuthModule } from '../auth/auth.module';
 import { AuditLogService } from '../../infrastructure/audit/audit-log.service';
 import { RedisService } from '../../infrastructure/cache/redis.service';
 import { PermissionController } from './permission.controller';
@@ -9,7 +10,7 @@ import { PERMISSION_REPOSITORY } from './repositories/permission.repository.inte
 import { PermissionRepositoryImpl } from './repositories/permission.repository.impl';
 
 @Module({
-  imports: [PrismaModule, LoggerModule],
+  imports: [PrismaModule, LoggerModule, AuthModule],
   controllers: [PermissionController],
   providers: [
     PermissionService,

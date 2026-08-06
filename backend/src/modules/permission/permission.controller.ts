@@ -18,7 +18,7 @@ export class PermissionController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('permission.manage')
   @ApiOperation({ summary: 'List permissions' })
   findAll(@Query() query: PermissionQueryDto) {
     return this.permissionService.findAll(query);
@@ -26,7 +26,7 @@ export class PermissionController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('permission.manage')
   @ApiOperation({ summary: 'Create permission' })
   create(@Body() dto: CreatePermissionDto, @Req() req: Request & { user?: any }) {
     return this.permissionService.create(dto, req.user?.id);
@@ -34,7 +34,7 @@ export class PermissionController {
 
   @Get(':id')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('permission.manage')
   @ApiOperation({ summary: 'Get permission by id' })
   findOne(@Param('id') id: string) {
     return this.permissionService.findById(id);
@@ -42,7 +42,7 @@ export class PermissionController {
 
   @Put(':id')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('permission.manage')
   @ApiOperation({ summary: 'Update permission' })
   update(@Param('id') id: string, @Body() dto: UpdatePermissionDto, @Req() req: Request & { user?: any }) {
     return this.permissionService.update(id, dto, req.user?.id);
@@ -50,7 +50,7 @@ export class PermissionController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('permission.manage')
   @ApiOperation({ summary: 'Delete permission' })
   delete(@Param('id') id: string, @Req() req: Request & { user?: any }) {
     return this.permissionService.delete(id, req.user?.id);

@@ -5,9 +5,10 @@ import { InventoryModule } from '../inventory/inventory.module';
 import { SalesOrderModule } from '../sales-order/sales-order.module';
 import { PurchaseOrderModule } from '../purchase-order/purchase-order.module';
 import { ProductModule } from '../product/product.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [InventoryModule, SalesOrderModule, PurchaseOrderModule, ProductModule],
+  imports: [InventoryModule, SalesOrderModule, PurchaseOrderModule, ProductModule, AuthModule],
   controllers: [ReportController],
   providers: [ReportService],
   exports: [ReportService],

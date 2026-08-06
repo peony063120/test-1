@@ -1,11 +1,12 @@
 import { UserEntity } from '../entities/user.entity';
-import { UserQueryDto } from 'src/modules/user/dto/user-query.dto';
+import { UserQueryDto } from '../dto/user-query.dto';
 
 export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
 
 export interface IUserRepository {
   save(user: UserEntity): Promise<UserEntity>;
   update(id: string, user: Partial<UserEntity>): Promise<UserEntity>;
+  updatePasswordHash(id: string, passwordHash: string): Promise<void>;
   findById(id: string): Promise<UserEntity | null>;
   findByUsername(username: string): Promise<UserEntity | null>;
   findByEmail(email: string): Promise<UserEntity | null>;

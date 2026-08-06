@@ -13,6 +13,28 @@ export default defineConfig(({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('/d3-')) {
+                return 'vendor-d3';
+              }
+              if (id.includes('xlsx')) {
+                return 'vendor-xlsx';
+              }
+              if (id.includes('recharts')) {
+                return 'vendor-recharts';
+              }
+              return undefined;
+            }
+
+            return undefined;
+          },
+        },
+      },
+    },
     server: {
       port: 3001,
       proxy: {

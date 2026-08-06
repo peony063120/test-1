@@ -6,10 +6,8 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshStrategy } from './strategies/refresh.strategy';
-import { UserModule } from '../user/user.module';
-import { RoleModule } from '../role/role.module';
-import { PermissionModule } from '../permission/permission.module';
-import { RedisService } from '../../infrastructure/cache/redis.service';
+import { PrismaModule } from '../../database/prisma/prisma.module';
+import { CacheModule } from '../../infrastructure/cache/cache.module';
 import { AuditLogService } from '../../infrastructure/audit/audit-log.service';
 
 @Module({
@@ -24,12 +22,11 @@ import { AuditLogService } from '../../infrastructure/audit/audit-log.service';
       }),
       inject: [ConfigService],
     }),
-    UserModule,
-    RoleModule,
-    PermissionModule,
+    PrismaModule,
+    CacheModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, RefreshStrategy, RedisService, AuditLogService],
-  exports: [AuthService],
+  providers: [AuthService, JwtStrategy, RefreshStrategy, AuditLogService],
+  exports: [AuthService, JwtModule, CacheModule, PrismaModule],
 })
 export class AuthModule {}

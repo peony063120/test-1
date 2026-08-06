@@ -5,6 +5,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggerService } from './infrastructure/logger/logger.service';
+import { AuthService } from './modules/auth/auth.service';
 import { createValidationPipe } from './common/pipes/validation.pipe';
 
 async function bootstrap() {
@@ -14,6 +15,10 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const logger = app.get(LoggerService);
+  const authService = app.get(AuthService);
+
+  // Initialize role permissions on startup
+  await authService.initializeRolePermissions();
 
   app.useGlobalPipes(createValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());

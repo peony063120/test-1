@@ -1,4 +1,4 @@
-import { ValidationPipe as NestValidationPipe, ValidationError } from '@nestjs/common';
+import { BadRequestException, ValidationPipe as NestValidationPipe, ValidationError } from '@nestjs/common';
 
 export function createValidationPipe() {
   return new NestValidationPipe({
@@ -11,7 +11,10 @@ export function createValidationPipe() {
         const constraints = error.constraints ? Object.values(error.constraints) : [];
         return constraints.join(', ');
       });
-      return new Error(messages.join('; '));
+      return new BadRequestException({
+        message: 'Validation failed',
+        errors: messages.filter(Boolean),
+      });
     },
   });
 }

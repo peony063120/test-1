@@ -7,9 +7,10 @@ import { RoleController } from './role.controller';
 import { RoleService } from './role.service';
 import { ROLE_REPOSITORY } from './repositories/role.repository.interface';
 import { RoleRepositoryImpl } from './repositories/role.repository.impl';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, LoggerModule],
+  imports: [PrismaModule, LoggerModule, AuthModule],
   controllers: [RoleController],
   providers: [
     RoleService,

@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import api from '@/api/axios.config';
-import type { AuthResponse, AuthUser, LoginPayload } from '@/types/auth.types';
+import type { AuthResponse, AuthUser, LoginPayload, RegisterPayload } from '@/types/auth.types';
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
@@ -28,6 +28,12 @@ const persistSession = (response: AuthResponse) => {
 
 export const login = createAsyncThunk<AuthResponse, LoginPayload>('auth/login', async (payload) => {
   const { data } = await api.post<AuthResponse>('/auth/login', payload);
+  persistSession(data);
+  return data;
+});
+
+export const registerAccount = createAsyncThunk<AuthResponse, RegisterPayload>('auth/registerAccount', async (payload) => {
+  const { data } = await api.post<AuthResponse>('/auth/register', payload);
   persistSession(data);
   return data;
 });
@@ -66,6 +72,11 @@ const authSlice = createSlice({
         state.isLoading = false; state.user = action.payload.user; state.accessToken = action.payload.accessToken; state.isAuthenticated = true;
       })
       .addCase(login.rejected, (state) => { state.isLoading = false; })
+      .addCase(registerAccount.pending, (state) => { state.isLoading = true; })
+      .addCase(registerAccount.fulfilled, (state, action) => {
+        state.isLoading = false; state.user = action.payload.user; state.accessToken = action.payload.accessToken; state.isAuthenticated = true;
+      })
+      .addCase(registerAccount.rejected, (state) => { state.isLoading = false; })
       .addCase(refreshSession.pending, (state) => { state.isLoading = true; })
       .addCase(refreshSession.fulfilled, (state, action) => {
         state.isLoading = false; state.user = action.payload.user; state.accessToken = action.payload.accessToken; state.isAuthenticated = true;

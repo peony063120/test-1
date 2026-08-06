@@ -10,9 +10,10 @@ import { InventoryRepositoryImpl } from './repositories/inventory.repository.imp
 import { StockTransactionModule } from '../stock-transaction/stock-transaction.module';
 import { WarehouseModule } from '../warehouse/warehouse.module';
 import { ProductModule } from '../product/product.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, LoggerModule, StockTransactionModule, WarehouseModule, ProductModule],
+  imports: [PrismaModule, LoggerModule, StockTransactionModule, WarehouseModule, ProductModule, AuthModule],
   controllers: [InventoryController],
   providers: [
     InventoryService,

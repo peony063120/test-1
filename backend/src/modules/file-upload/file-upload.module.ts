@@ -5,9 +5,10 @@ import { FileUploadService } from './file-upload.service';
 import { FILE_UPLOAD_REPOSITORY } from './repositories/file-upload.repository.interface';
 import { FileUploadRepositoryImpl } from './repositories/file-upload.repository.impl';
 import { StorageModule } from '../../infrastructure/storage/storage.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, StorageModule],
+  imports: [PrismaModule, StorageModule, AuthModule],
   controllers: [FileUploadController],
   providers: [
     FileUploadService,

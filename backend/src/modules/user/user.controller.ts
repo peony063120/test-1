@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthGuard } from '../auth/guards/auth.guard';
@@ -18,7 +18,7 @@ export class UserController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('user.manage')
   @ApiOperation({ summary: 'List users' })
   findAll(@Query() query: UserQueryDto) {
     return this.userService.findAll(query);
@@ -27,15 +27,16 @@ export class UserController {
   @Get(':id')
   @ApiOperation({ summary: 'Get user by id' })
   async findOne(@Param('id') id: string, @Req() req: Request & { user?: any }) {
-    if (req.user?.id !== id && !req.user?.roles?.includes('admin')) {
-      throw new Error('Access denied');
+    const roleNames = req.user?.roles || [];
+    if (req.user?.id !== id && !roleNames.includes('ADMIN')) {
+      throw new ForbiddenException('Access denied');
     }
     return this.userService.findById(id);
   }
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('user.manage')
   @ApiOperation({ summary: 'Create user' })
   create(@Body() dto: CreateUserDto, @Req() req: Request & { user?: any }) {
     return this.userService.create(dto, req.user?.id);
@@ -43,7 +44,7 @@ export class UserController {
 
   @Put(':id')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('user.manage')
   @ApiOperation({ summary: 'Update user' })
   update(@Param('id') id: string, @Body() dto: UpdateUserDto, @Req() req: Request & { user?: any }) {
     return this.userService.update(id, dto, req.user?.id);
@@ -51,7 +52,7 @@ export class UserController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('user.manage')
   @ApiOperation({ summary: 'Soft delete user' })
   delete(@Param('id') id: string, @Req() req: Request & { user?: any }) {
     return this.userService.delete(id, req.user?.id);
@@ -59,7 +60,7 @@ export class UserController {
 
   @Patch(':id/status')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('user.manage')
   @ApiOperation({ summary: 'Change user status' })
   changeStatus(@Param('id') id: string, @Body('status') status: string, @Req() req: Request & { user?: any }) {
     return this.userService.changeStatus(id, status, req.user?.id);
@@ -67,7 +68,7 @@ export class UserController {
 
   @Post(':id/roles')
   @UseGuards(RolesGuard)
-  @Roles('admin')
+  @Roles('user.manage')
   @ApiOperation({ summary: 'Assign roles to user' })
   assignRoles(@Param('id') id: string, @Body('roleIds') roleIds: string[], @Req() req: Request & { user?: any }) {
     return this.userService.assignRoles(id, roleIds, req.user?.id);

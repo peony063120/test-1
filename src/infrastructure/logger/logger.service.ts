@@ -1,10 +1,37 @@
-import { Inject, Injectable, LoggerService as NestLoggerService } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { Injectable, LoggerService as NestLoggerService } from '@nestjs/common';
+import * as winston from 'winston';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class LoggerService implements NestLoggerService {
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
+  private readonly logger: winston.Logger;
+
+  constructor() {
+    const logDir = path.resolve(process.cwd(), 'logs');
+    fs.mkdirSync(logDir, { recursive: true });
+
+    this.logger = winston.createLogger({
+      level: process.env.LOG_LEVEL || 'info',
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.errors({ stack: true }),
+        winston.format.json(),
+      ),
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.simple(),
+          ),
+        }),
+        new winston.transports.File({
+          filename: path.join(logDir, 'app.log'),
+          maxsize: 10 * 1024 * 1024,
+        }),
+      ],
+    });
+  }
 
   log(message: string, context?: string) {
     this.logger.info(message, { context });

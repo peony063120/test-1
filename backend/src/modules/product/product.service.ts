@@ -27,8 +27,8 @@ export class ProductService {
   }
 
   async findAll(query: QueryProductDto) {
-    const page = Number(query.page ?? 1);
-    const limit = Number(query.limit ?? 20);
+    const page = Math.max(1, Number(query.page ?? 1));
+    const limit = Math.max(1, Number(query.limit ?? 20));
     const search = query.search?.trim();
 
     const [items, total] = await Promise.all([

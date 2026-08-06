@@ -7,18 +7,20 @@ import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../../infrastructure/cache/redis.service';
 import { AuditLogService } from '../../infrastructure/audit/audit-log.service';
 import { UnauthorizedException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let userService: { findByUsername: jest.Mock; findById: jest.Mock; update: jest.Mock };
+  let userService: { findByUsername: jest.Mock; findByEmail: jest.Mock; findById: jest.Mock; updatePasswordHash: jest.Mock };
   let jwtService: { sign: jest.Mock; verify: jest.Mock };
   let redisService: { get: jest.Mock; set: jest.Mock; del: jest.Mock };
 
   beforeEach(async () => {
     userService = {
       findByUsername: jest.fn(),
+      findByEmail: jest.fn(),
       findById: jest.fn(),
-      update: jest.fn(),
+      updatePasswordHash: jest.fn(),
     };
     jwtService = { sign: jest.fn(() => 'signed-token'), verify: jest.fn(() => ({ sub: 'user-1' })) };
     redisService = { get: jest.fn(), set: jest.fn(), del: jest.fn() };
@@ -39,7 +41,8 @@ describe('AuthService', () => {
   });
 
   it('logs in a user and returns tokens', async () => {
-    userService.findByUsername.mockResolvedValue({ id: 'user-1', username: 'admin', email: 'admin@example.com', roles: [{ name: 'admin' }], passwordHash: '$2b$10$abc' });
+    const passwordHash = await bcrypt.hash('admin123', 10);
+    userService.findByUsername.mockResolvedValue({ id: 'user-1', username: 'admin', email: 'admin@example.com', roles: [{ name: 'admin' }], passwordHash });
     const result = await service.login({ username: 'admin', password: 'admin123' } as any);
     expect(result.accessToken).toBeDefined();
     expect(result.refreshToken).toBeDefined();
@@ -58,14 +61,15 @@ describe('AuthService', () => {
   });
 
   it('changes password successfully', async () => {
-    userService.findById.mockResolvedValue({ id: 'user-1', passwordHash: '$2b$10$abc' });
+    const oldPasswordHash = await bcrypt.hash('old', 10);
+    userService.findById.mockResolvedValue({ id: 'user-1', passwordHash: oldPasswordHash });
     const result = await service.changePassword('user-1', 'old', 'new');
     expect(result.success).toBe(true);
-    expect(userService.update).toHaveBeenCalled();
+    expect(userService.updatePasswordHash).toHaveBeenCalled();
   });
 
   it('forgot password returns success even for unknown email', async () => {
-    userService.findByUsername.mockResolvedValue(null);
+    userService.findByEmail.mockResolvedValue(null);
     await expect(service.forgotPassword('missing@example.com')).resolves.toEqual({ success: true });
   });
 });

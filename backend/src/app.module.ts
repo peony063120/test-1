@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AuthModule } from './modules/auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './database/prisma/prisma.module';
 import { LoggerModule } from './infrastructure/logger/logger.module';
-import { ProductsModule } from './products/products.module';
-import { PurchaseOrdersModule } from './purchase-orders/purchase-orders.module';
-import { SalesOrdersModule } from './sales-orders/sales-orders.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { AuthGuard } from './modules/auth/guards/auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 import { UserModule } from './modules/user/user.module';
 import { RoleModule } from './modules/role/role.module';
 import { PermissionModule } from './modules/permission/permission.module';
@@ -65,11 +65,11 @@ import { MetricsModule } from './modules/metrics/metrics.module';
     WorkerModule,
     StorageModule,
     MetricsModule,
-    ProductsModule,
-    PurchaseOrdersModule,
-    SalesOrdersModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
 })
 export class AppModule {}

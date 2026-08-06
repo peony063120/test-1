@@ -1,6 +1,6 @@
 export interface Role {
   id?: string;
-  name: string;
+  name: 'ADMIN' | 'MANAGER' | 'WAREHOUSE_STAFF' | 'SALES_STAFF' | string;
 }
 
 export interface AuthUser {
@@ -16,6 +16,14 @@ export interface AuthUser {
 export interface LoginPayload {
   username: string;
   password: string;
+}
+
+export interface RegisterPayload {
+  username: string;
+  email: string;
+  password: string;
+  phone?: string;
+  roleName: 'MANAGER' | 'WAREHOUSE_STAFF' | 'SALES_STAFF';
 }
 
 export interface AuthResponse {

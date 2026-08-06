@@ -8,9 +8,10 @@ import { StockTransactionService } from './stock-transaction.service';
 import { STOCK_TRANSACTION_REPOSITORY } from './repositories/stock-transaction.repository.interface';
 import { StockTransactionRepositoryImpl } from './repositories/stock-transaction.repository.impl';
 import { UserModule } from '../user/user.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, LoggerModule, UserModule],
+  imports: [PrismaModule, LoggerModule, UserModule, AuthModule],
   controllers: [StockTransactionController],
   providers: [
     StockTransactionService,

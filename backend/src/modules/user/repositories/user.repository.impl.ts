@@ -50,6 +50,13 @@ export class UserRepositoryImpl implements IUserRepository {
     } as UserEntity;
   }
 
+  async updatePasswordHash(id: string, passwordHash: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id },
+      data: { passwordHash },
+    });
+  }
+
   async findById(id: string): Promise<UserEntity | null> {
     const user = await this.prisma.user.findFirst({
       where: { id, deletedAt: null },

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../database/prisma/prisma.module';
 import { LoggerModule } from '../../infrastructure/logger/logger.module';
+import { AuthModule } from '../auth/auth.module';
 import { AuditLogService } from '../../infrastructure/audit/audit-log.service';
 import { RedisService } from '../../infrastructure/cache/redis.service';
 import { WarehouseController } from './warehouse.controller';
@@ -9,7 +10,7 @@ import { WAREHOUSE_REPOSITORY } from './repositories/warehouse.repository.interf
 import { WarehouseRepositoryImpl } from './repositories/warehouse.repository.impl';
 
 @Module({
-  imports: [PrismaModule, LoggerModule],
+  imports: [PrismaModule, LoggerModule, AuthModule],
   controllers: [WarehouseController],
   providers: [
     WarehouseService,
