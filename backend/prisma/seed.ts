@@ -191,6 +191,33 @@ async function main() {
     });
   }
 
+  // ── Test accounts for each role ───────────────────────────
+  const testAccounts: Array<{ username: string; roleName: string; role: typeof adminRole }> = [
+    { username: 'manager', roleName: 'MANAGER', role: managerRole },
+    { username: 'warehouse', roleName: 'WAREHOUSE_STAFF', role: warehouseRole },
+    { username: 'sales', roleName: 'SALES_STAFF', role: salesRole },
+  ];
+
+  for (const { username, roleName, role } of testAccounts) {
+    if (!role) continue;
+    const user = await prisma.user.upsert({
+      where: { username },
+      update: { passwordHash },
+      create: {
+        username,
+        passwordHash,
+        email: `${username}@example.com`,
+        status: 'ACTIVE',
+      },
+    });
+    await prisma.userRole.upsert({
+      where: { userId_roleId: { userId: user.id, roleId: role.id } },
+      update: {},
+      create: { userId: user.id, roleId: role.id },
+    });
+    console.log(`Created test account: ${username} / admin123 (${roleName})`);
+  }
+
   console.log('Seed completed successfully');
 
   // ── System settings defaults ──────────────────────────────
