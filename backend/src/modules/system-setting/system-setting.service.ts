@@ -1,14 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { SYSTEM_SETTING_REPOSITORY, ISystemSettingRepository } from './repositories/system-setting.repository.interface';
 
-const DEFAULT_SYSTEM_SETTINGS: Array<{ key: string; value: string }> = [
-  { key: 'system.name', value: 'Product Management System' },
-  { key: 'system.timezone', value: 'Asia/Ho_Chi_Minh' },
-  { key: 'system.currency', value: 'VND' },
-  { key: 'inventory.lowStockThreshold', value: '10' },
-  { key: 'sales.vatRate', value: '8' },
-];
-
 @Injectable()
 export class SystemSettingService {
   constructor(@Inject(SYSTEM_SETTING_REPOSITORY) private readonly systemSettingRepository: ISystemSettingRepository) {}
@@ -26,15 +18,6 @@ export class SystemSettingService {
   }
 
   async findAll() {
-    const settings = await this.systemSettingRepository.findAll();
-    if (settings.length > 0) {
-      return settings;
-    }
-
-    for (const setting of DEFAULT_SYSTEM_SETTINGS) {
-      await this.systemSettingRepository.save(setting);
-    }
-
     return this.systemSettingRepository.findAll();
   }
 

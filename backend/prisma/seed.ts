@@ -191,52 +191,34 @@ async function main() {
     });
   }
 
-  const defaultSettings = [
-    {
-      key: 'system.name',
-      value: 'Product Management System',
-      dataType: 'STRING',
-      description: 'Display name of the system',
-    },
-    {
-      key: 'system.timezone',
-      value: 'Asia/Ho_Chi_Minh',
-      dataType: 'STRING',
-      description: 'Default timezone used for reports and logs',
-    },
-    {
-      key: 'system.currency',
-      value: 'VND',
-      dataType: 'STRING',
-      description: 'Default currency for sales and purchase documents',
-    },
-    {
-      key: 'inventory.lowStockThreshold',
-      value: '10',
-      dataType: 'NUMBER',
-      description: 'Global threshold for low stock alert',
-    },
-    {
-      key: 'sales.vatRate',
-      value: '8',
-      dataType: 'NUMBER',
-      description: 'Default VAT rate in percent',
-    },
+  console.log('Seed completed successfully');
+
+  // ── System settings defaults ──────────────────────────────
+  const systemSettings = [
+    { key: 'siteName', value: 'Product Management System', dataType: 'STRING', description: 'Tên hiển thị của hệ thống' },
+    { key: 'currency', value: 'VND', dataType: 'STRING', description: 'Đơn vị tiền tệ mặc định' },
+    { key: 'timezone', value: 'Asia/Ho_Chi_Minh', dataType: 'STRING', description: 'Múi giờ hệ thống' },
+    { key: 'language', value: 'vi', dataType: 'STRING', description: 'Ngôn ngữ mặc định' },
+    { key: 'lowStockThreshold', value: '10', dataType: 'NUMBER', description: 'Ngưỡng cảnh báo tồn kho thấp' },
+    { key: 'itemsPerPage', value: '25', dataType: 'NUMBER', description: 'Số mục hiển thị mỗi trang' },
+    { key: 'enableBarcode', value: 'true', dataType: 'BOOLEAN', description: 'Bật/tắt quét mã vạch' },
+    { key: 'enableNotification', value: 'true', dataType: 'BOOLEAN', description: 'Bật/tắt thông báo' },
+    { key: 'autoLogoutMinutes', value: '30', dataType: 'NUMBER', description: 'Thời gian tự đăng xuất (phút)' },
+    { key: 'companyName', value: 'Công ty TNHH ABC', dataType: 'STRING', description: 'Tên công ty trên hóa đơn' },
+    { key: 'companyAddress', value: 'Hà Nội, Việt Nam', dataType: 'STRING', description: 'Địa chỉ công ty' },
+    { key: 'companyPhone', value: '0123-456-789', dataType: 'STRING', description: 'SĐT công ty' },
+    { key: 'companyEmail', value: 'contact@company.vn', dataType: 'STRING', description: 'Email liên hệ' },
+    { key: 'taxRate', value: '10', dataType: 'NUMBER', description: 'Thuế suất mặc định (%)' },
+    { key: 'defaultWarehouse', value: '', dataType: 'STRING', description: 'Kho mặc định khi nhập hàng' },
   ];
 
-  for (const setting of defaultSettings) {
-    await prisma.systemSetting.upsert({
-      where: { key: setting.key },
-      update: {
-        value: setting.value,
-        dataType: setting.dataType,
-        description: setting.description,
-      },
-      create: setting,
-    });
+  for (const setting of systemSettings) {
+    const existing = await prisma.systemSetting.findUnique({ where: { key: setting.key } });
+    if (!existing) {
+      await prisma.systemSetting.create({ data: setting });
+    }
   }
-
-  console.log('Seed completed successfully');
+  console.log('System settings seeded');
 }
 
 main()
