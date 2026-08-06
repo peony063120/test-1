@@ -32,4 +32,15 @@ describe('SystemSettingService', () => {
     repository.save.mockResolvedValue({ id: 's1' });
     await expect(service.set('siteName', 'Demo')).resolves.toEqual({ id: 's1' });
   });
+
+  it('creates default settings when repository is empty', async () => {
+    repository.findAll
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ key: 'system.name', value: 'Product Management System' }]);
+
+    const result = await service.findAll();
+
+    expect(repository.save).toHaveBeenCalled();
+    expect(result).toEqual([{ key: 'system.name', value: 'Product Management System' }]);
+  });
 });

@@ -191,6 +191,51 @@ async function main() {
     });
   }
 
+  const defaultSettings = [
+    {
+      key: 'system.name',
+      value: 'Product Management System',
+      dataType: 'STRING',
+      description: 'Display name of the system',
+    },
+    {
+      key: 'system.timezone',
+      value: 'Asia/Ho_Chi_Minh',
+      dataType: 'STRING',
+      description: 'Default timezone used for reports and logs',
+    },
+    {
+      key: 'system.currency',
+      value: 'VND',
+      dataType: 'STRING',
+      description: 'Default currency for sales and purchase documents',
+    },
+    {
+      key: 'inventory.lowStockThreshold',
+      value: '10',
+      dataType: 'NUMBER',
+      description: 'Global threshold for low stock alert',
+    },
+    {
+      key: 'sales.vatRate',
+      value: '8',
+      dataType: 'NUMBER',
+      description: 'Default VAT rate in percent',
+    },
+  ];
+
+  for (const setting of defaultSettings) {
+    await prisma.systemSetting.upsert({
+      where: { key: setting.key },
+      update: {
+        value: setting.value,
+        dataType: setting.dataType,
+        description: setting.description,
+      },
+      create: setting,
+    });
+  }
+
   console.log('Seed completed successfully');
 }
 
