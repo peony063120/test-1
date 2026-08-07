@@ -38,7 +38,6 @@ export default defineConfig(function (_a) {
             port: 3001,
             proxy: {
                 '/api': { target: apiTarget, changeOrigin: true },
-                '/socket.io': { target: apiTarget, changeOrigin: true, ws: true },
             },
         },
     };
