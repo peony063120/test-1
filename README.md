@@ -40,10 +40,12 @@ Open a second terminal:
 ```powershell
 cd frontend
 npm install
-npx vite --host 127.0.0.1
+npx vite
 ```
 
-Frontend runs at: **http://127.0.0.1:3001**
+Frontend runs at: **http://localhost:3001**
+
+> The dev server is bound to `0.0.0.0` (all network interfaces). You can also access it from other devices on the same WiFi — see [Mobile / LAN Testing](#mobile--lan-testing) below.
 
 ## Test Accounts
 
@@ -139,6 +141,51 @@ npm run prisma:seed     # Re-seed database
 npx vite --host 127.0.0.1  # Start dev server
 npm run build               # Type-check + production build
 ```
+
+## Mobile / LAN Testing
+
+To test on a phone or tablet connected to the same WiFi:
+
+### 1. Find your computer's LAN IP
+
+```powershell
+ipconfig | findstr "IPv4"
+```
+
+Example output: `192.168.1.5`
+
+### 2. Create frontend `.env` for mobile
+
+`frontend/.env`:
+
+```env
+VITE_API_URL=http://192.168.1.5:3000/api/v1
+```
+
+Replace `192.168.1.5` with your actual LAN IP.  
+This tells the frontend to call the backend directly instead of using Vite's dev proxy (which only works on the computer running Vite).
+
+### 3. Start both servers
+
+Backend (terminal 1):
+```powershell
+cd backend
+npm run start:dev
+```
+
+Frontend (terminal 2):
+```powershell
+cd frontend
+npx vite
+```
+
+### 4. Open on phone
+
+Browse to: `http://192.168.1.5:3001` (use your LAN IP)
+
+Login with any test account. The backend CORS is configured to accept LAN origins automatically.
+
+> If the phone still can't connect, check your firewall allows port 3000 (backend) and 3001 (frontend) on the local network.
 
 ## Troubleshooting
 

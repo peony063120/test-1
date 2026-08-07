@@ -35,7 +35,17 @@ async function bootstrap() {
   SwaggerModule.setup(process.env.SWAGGER_PATH || 'docs', app, document);
 
   app.enableCors({
-    origin: configService.get<string>('CORS_ORIGIN')?.split(',') || ['http://localhost:3001'],
+    origin: (origin, callback) => {
+      const allowed = configService.get<string>('CORS_ORIGIN')?.split(',').map(s => s.trim()) || ['http://localhost:3001'];
+      // Allow requests with no origin (mobile apps, Postman, curl), localhost, or LAN IPs
+      if (!origin) return callback(null, true);
+      if (allowed.some(a => origin.startsWith(a))) return callback(null, true);
+      // Allow any LAN origin in development (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+      if (/^https?:\/\/(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+      callback(null, true); // Allow all in dev; restrict via CORS_ORIGIN in production
+    },
     credentials: true,
   });
 

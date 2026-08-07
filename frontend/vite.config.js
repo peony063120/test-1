@@ -34,6 +34,7 @@ export default defineConfig(function (_a) {
             },
         },
         server: {
+            host: true,
             port: 3001,
             proxy: {
                 '/api': { target: apiTarget, changeOrigin: true },
