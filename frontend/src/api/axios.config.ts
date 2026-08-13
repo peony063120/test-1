@@ -3,8 +3,32 @@ import axios, { type InternalAxiosRequestConfig } from 'axios';
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
 
+/**
+ * Resolve the backend API base URL.
+ *
+ * Priority:
+ * 1. VITE_API_URL (explicit override)
+ * 2. localhost/127.0.0.1 → `/api/v1` (handled by Vite dev proxy)
+ * 3. Any other host (LAN IP, domain) → `http://<same-host>:3000/api/v1`
+ *
+ * This makes the app work on ANY LAN IP without editing .env.
+ */
+const resolveBaseUrl = (): string => {
+  const explicit = import.meta.env.VITE_API_URL as string | undefined;
+  if (explicit && explicit.trim()) return explicit.trim();
+
+  if (typeof window === 'undefined') return '/api/v1';
+
+  const { hostname, protocol } = window.location;
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
+    return '/api/v1';
+  }
+
+  return `${protocol}//${hostname}:3000/api/v1`;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
+  baseURL: resolveBaseUrl(),
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 });
